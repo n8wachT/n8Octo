@@ -66,6 +66,7 @@ class Plugin:
     def __init__(self):
         self.commands = []
         self.handlers = []
+        self.inline_buttons = []
 
     def command(self, command, description="Not available", inline_supported=True, hidden=False):
         def decorator(func):
@@ -81,11 +82,22 @@ class Plugin:
     def message(self, regex: str):
         """
         Pass regex pattern for your function
-        Disclaimer: this may work in Octeon-Discord
         """
         def decorator(func):
             self.handlers.append({
                 "regex": regex,
+                "function": func,
+            })
+        return decorator
+
+    def inline_button(self, callback_name: str):
+        """
+        Pass the text your callback name starts with
+        Disclaimer: this may not work in Octeon-Discord
+        """
+        def decorator(func):
+            self.inline_buttons.append({
+                "callback": callback_name,
                 "function": func,
             })
         return decorator

@@ -16,13 +16,6 @@ import octeon
 from octeon.constants import ERROR, OK
 import settings
 
-COMMAND_INFO = """
-%(command)s
-Description: <i>%(description)s</i>
-Additional info and examples:
-<i>%(docs)s</i>
-"""
-
 class DefaultPlugin:
     def coreplug_reload(self, bot, update, user, *__):
         if user.id == settings.ADMIN:
@@ -114,6 +107,8 @@ class OcteonCore(DefaultPlugin):
                 "state": ERROR,
                 "name": plugname,
                 "commands": [],
+                "messagehandles": [],
+                "inline_buttons": [],
                 "disabledin": []
             })
         else:
@@ -126,6 +121,7 @@ class OcteonCore(DefaultPlugin):
                     "name": plugname,
                     "commands": plugin.COMMANDS,
                     "messagehandles": [],
+                    "inline_buttons": [],
                     "disabledin": []
                 })
                 self.logger.info("Legacy module %s loaded", plugname)
@@ -136,6 +132,7 @@ class OcteonCore(DefaultPlugin):
                     "name": plugname,
                     "commands": plugin.plugin.commands,
                     "messagehandles": plugin.plugin.handlers,
+                    "inline_buttons": plugin.plugin.inline_buttons,
                     "disabledin": []
                 })
                 self.logger.info("Module %s loaded", plugname)
@@ -164,6 +161,15 @@ class OcteonCore(DefaultPlugin):
                 function = command_info["function"]
                 if update.inline_query.query.startswith(command):
                     return function, command
+
+    def handle_inline_button(self, query):
+        for plugin in self.plugins:
+            if "inline_buttons" in plugin:
+                for command_info in plugin["inline_buttons"]:
+                    command = command_info["callback"]
+                    function = command_info["function"]
+                    if query.data.startswith(command):
+                        return function
 
     def handle_message(self, update):
         handlers = []
