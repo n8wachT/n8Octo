@@ -30,7 +30,8 @@ class message:
         if photo and file:
             raise TypeError("Send file and photo at same time?!")
         if (photo or file) and parse_mode:
-            raise TypeError("parse_mode and photo/file cant be used at same time!")
+            raise TypeError(
+                "parse_mode and photo/file cant be used at same time!")
 
     @classmethod
     def from_old_format(cls, reply):
@@ -54,7 +55,7 @@ class message:
         elif reply[1] == constants.PHOTOWITHINLINEBTN:
             message.photo = reply[0][0]
             message.text = reply[0][1]
-            message.inline_keyboard = reply_markup = reply[0][2]
+            message.inline_keyboard = reply[0][2]
         if "failed" in reply:
             message.failed = True
         return message
@@ -68,14 +69,20 @@ class Plugin:
         self.handlers = []
         self.inline_buttons = []
 
-    def command(self, command, description="Not available", inline_supported=True, hidden=False):
+    def command(self,
+                command,
+                description="Not available",
+                inline_supported=True,
+                hidden=False,
+                required_args=0):
         def decorator(func):
             self.commands.append({
                 "command": command,
                 "description": html.escape(description),
                 "function": func,
                 "inline_support": inline_supported,
-                "hidden": hidden
+                "hidden": hidden,
+                "required_args": required_args
             })
         return decorator
 

@@ -1,22 +1,20 @@
-"""
-Octeon Core
+
+"""Octeon Core
 """
 import importlib.util
 import os.path
 from glob import glob
 from logging import getLogger
 import re
-import textwrap
-import html
 
-from telegram.ext import Updater, CommandHandler
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
+from telegram.ext import CommandHandler
 import octeon
 from octeon.constants import ERROR, OK
 import settings
 
+
 class DefaultPlugin:
+
     def coreplug_reload(self, bot, update, user, *__):
         if user.id == settings.ADMIN:
             self.logger.info("Reload requested.")
@@ -56,7 +54,9 @@ class DefaultPlugin:
         else:
             return octeon.message("Access Denied.")
 
+
 class OcteonCore(DefaultPlugin):
+
     def __init__(self):
         self.logger = getLogger("Octeon-Core")
         self.plugins = []
@@ -68,7 +68,7 @@ class OcteonCore(DefaultPlugin):
     def gen_help(self):
         raise RuntimeError
 
-    def create_command_handler(self, command, function):
+    def create_command_handler(self, command, function, minimal_args=0):
         raise RuntimeError
 
     def load_all_plugins(self):
@@ -93,16 +93,23 @@ class OcteonCore(DefaultPlugin):
         self.logger.info("Adding handlers")
         for plugin in self.plugins:
             for command in plugin["commands"]:
-                self.create_command_handler(command["command"], command["function"])
+                if "required_args" in command:
+                    rargs = command["required_args"]
+                else:
+                    rargs = 0
+                self.create_command_handler(
+                    command["command"], command["function"], rargs)
 
     def load_plugin(self, plugpath):
         plugname = os.path.basename(plugpath).split(".py")[0]
         try:
-            spec = importlib.util.spec_from_file_location("octeon.plugin", plugpath)
+            spec = importlib.util.spec_from_file_location(
+                "octeon.plugin", plugpath)
             plugin = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(plugin)
         except Exception as f:
-            self.logger.warning("Plugin %s failed to init cause of %s", plugname, f)
+            self.logger.warning(
+                "Plugin %s failed to init cause of %s", plugname, f)
             self.plugins.append({
                 "state": ERROR,
                 "name": plugname,
@@ -150,7 +157,8 @@ class OcteonCore(DefaultPlugin):
                             command + " ")
                         state_word_swap = len(update.message.text.split(
                             "/")) > 2 and update.message.text.startswith(command)
-                        state_mention_command = update.message.text.startswith(command + "@")
+                        state_mention_command = update.message.text.startswith(
+                            command + "@")
                         if state_only_command or state_word_swap or state_mention_command:
                             return function
 
