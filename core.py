@@ -182,8 +182,11 @@ class OcteonCore(DefaultPlugin):
     def handle_message(self, update):
         handlers = []
         for plugin in self.plugins:
-            if "messagehandles" in plugin:
-                for message_info in plugin["messagehandles"]:
-                    if re.match(message_info["regex"], update.message.text):
-                        handlers.append(message_info["function"])
+            try:
+                if "messagehandles" in plugin:
+                    for message_info in plugin["messagehandles"]:
+                        if re.match(message_info["regex"], update.message.text):
+                            handlers.append(message_info["function"])
+            except TypeError:
+                pass
         return handlers
