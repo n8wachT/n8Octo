@@ -1,17 +1,37 @@
 import json
 import os
+
+class LocaleError(Exception):
+    pass
+
+class InvalidLocale(LocaleError):
+    pass
+
+def convert_loc(path):
+    with open(os.path.normpath(path)) as f:
+        data = f.read().split("---")[1:]
+        if data == []:
+            raise InvalidLocale("Invalid Locale file. Doesnt contain any strings")
+        readed = {}
+        for string in data:
+            readed[string.split("\n")[0].strip()] = "\n".join(string.split("\n")[1:])[:-1].replace('\\n','\n')
+        return readed
+
+def get_strings(box):
+    return convert_loc(os.path.normpath("locale/%s/en.octeon_locale" % box)).keys()
+
+
+
 if not os.path.exists(os.path.normpath("plugdata/chat_locales.json")):
     with open(os.path.normpath("plugdata/chat_locales.json"), 'w') as f:
         f.write("{}")
 
 def _get_string(ltext, locale="en"):
     box, strname = ltext.boxname, ltext.strname
-    locale_path = os.path.normpath("locale/%s/%s.json" % (box, locale))
-    with open(os.path.normpath("locale/%s/en.json" % box)) as f:
-        locale = json.load(f)
+    locale_path = os.path.normpath("locale/%s/%s.octeon_locale" % (box, locale))
+    locale = convert_loc("locale/%s/%s.octeon_locale" % (box, "en"))
     if os.path.exists(locale_path):
-        with open(locale_path) as f:
-            locale.update(json.load(f))
+        locale.update(convert_loc(locale_path))
     return locale[strname]
 
 
@@ -29,5 +49,7 @@ def get_localized(ltext, uid):
             return _get_string(ltext, locale=locales[str(uid)])
         else:
             return _get_string(ltext)
+    elif isinstance(ltext, str):
+        return ltext
     else:
         raise TypeError
