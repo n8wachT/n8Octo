@@ -20,7 +20,12 @@ def convert_loc(path):
 def get_strings(box):
     return convert_loc(os.path.normpath("locale/%s/en.octeon_locale" % box)).keys()
 
-
+def get_locales_dict(box):
+    strings = get_strings(box)
+    d = {}
+    for string in strings:
+        d[string] = locale_string(string, box)
+    return d
 
 if not os.path.exists(os.path.normpath("plugdata/chat_locales.json")):
     with open(os.path.normpath("plugdata/chat_locales.json"), 'w') as f:
@@ -38,7 +43,7 @@ def _get_string(ltext, locale="en"):
 class locale_string:
     def __init__(self, strname, boxname):
         self.strname = strname
-        self.boxname = boxname
+        self.boxname = boxname # BAWX
 
 
 def get_localized(ltext, uid):

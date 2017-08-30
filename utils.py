@@ -29,9 +29,6 @@ class message:
         self.parse_mode = parse_mode
         if photo and file:
             raise TypeError("Send file and photo at same time?!")
-        if (photo or file) and parse_mode:
-            raise TypeError(
-                "parse_mode and photo/file cant be used at same time!")
 
     @classmethod
     def from_old_format(cls, reply):
