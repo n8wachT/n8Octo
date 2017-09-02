@@ -1,6 +1,7 @@
 import json
+import logging
 import os
-
+LOGGER = logging.getLogger("Octeon-Locale")
 class LocaleError(Exception):
     pass
 
@@ -13,8 +14,11 @@ def convert_loc(path):
         if data == []:
             raise InvalidLocale("Invalid Locale file. Doesnt contain any strings")
         readed = {}
-        for string in data:
-            readed[string.split("\n")[0].strip()] = "\n".join(string.split("\n")[1:])[:-1].replace('\\n','\n')
+        for lstring in data:
+            try:
+                readed[lstring.split("\n")[0].strip()] = "\n".join(lstring.split("\n")[1:])[:-1].replace('\\n','\n')
+            except RuntimeError:
+                readed[lstring.split("\n")[0].strip()] = "\n".join(lstring.split("\n")[1:])[:-1]
         return readed
 
 def get_strings(box):
@@ -44,6 +48,9 @@ class locale_string:
     def __init__(self, strname, boxname):
         self.strname = strname
         self.boxname = boxname # BAWX
+
+    def replace(*_, **__):
+        raise RuntimeError
 
 
 def get_localized(ltext, uid):
