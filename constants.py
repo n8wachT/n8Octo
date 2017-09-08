@@ -1,5 +1,5 @@
 """
-Octeon-rewrite constants
+OctoBot-rewrite constants
 """
 ERROR = "ERROR"
 OK = "OK"

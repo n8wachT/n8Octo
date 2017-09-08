@@ -1,5 +1,5 @@
-
-"""Octeon Core
+"""
+OctoBot Core
 """
 import importlib.util
 import os.path
@@ -8,8 +8,8 @@ from logging import getLogger
 import re
 
 from telegram.ext import CommandHandler
-import octeon
-from octeon.constants import ERROR, OK
+import core
+from core.constants import ERROR, OK
 import settings
 
 
@@ -22,7 +22,7 @@ class DefaultPlugin:
             self.load_all_plugins()
             return self.coreplug_list()
         else:
-            return octeon.message("Access Denied.")
+            return core.message("Access Denied.")
 
     def coreplug_start(*_, **__):
         raise RuntimeError
@@ -42,7 +42,7 @@ class DefaultPlugin:
             message.append(txt)
         message = sorted(message)
         message.reverse()
-        return octeon.message("\n".join(message))
+        return core.message("\n".join(message))
 
     def coreplug_load(self, bot, update, user, args):
         args = " ".join(args)
@@ -52,17 +52,17 @@ class DefaultPlugin:
             self.load_plugin(args)
             return self.coreplug_list()
         else:
-            return octeon.message("Access Denied.")
+            return core.message("Access Denied.")
 
 
-class OcteonCore(DefaultPlugin):
+class OctoBotCore(DefaultPlugin):
 
     def __init__(self):
-        self.logger = getLogger("Octeon-Core")
+        self.logger = getLogger("OctoBot-Core")
         self.plugins = []
         self.disabled = []
         self.platform = "N/A"
-        self.logger.info("Starting Octeon-Core. Loading plugins.")
+        self.logger.info("Starting OctoBot-Core. Loading plugins.")
         self.load_all_plugins()
 
     def gen_help(self):
@@ -81,7 +81,7 @@ class OcteonCore(DefaultPlugin):
             self.load_plugin(filename)
         self.plugins.append({
             "state": OK,
-            "name": "Octeon Core Plugin",
+            "name": "OctoBot Core Plugin",
             "commands": [{"command": "/start", "function": self.coreplug_start},
                          {"command": "//plugins", "function": self.coreplug_list},
                          {"command": "/help", "function": self.coreplug_help},
@@ -104,7 +104,7 @@ class OcteonCore(DefaultPlugin):
         plugname = os.path.basename(plugpath).split(".py")[0]
         try:
             spec = importlib.util.spec_from_file_location(
-                "octeon.plugin", plugpath)
+                "core.plugin", plugpath)
             plugin = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(plugin)
         except Exception as f:

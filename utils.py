@@ -1,7 +1,7 @@
 """
-Octeon stuff
+OctoBot stuff
 """
-from octeon import constants
+from core import constants
 import html
 NOTAPLUGIN = True
 
@@ -59,7 +59,7 @@ class message:
 
 
 class Plugin:
-    """Octeon plugin base"""
+    """OctoBot plugin base"""
 
     def __init__(self):
         self.commands = []
@@ -97,7 +97,7 @@ class Plugin:
     def inline_button(self, callback_name: str):
         """
         Pass the text your callback name starts with
-        Disclaimer: this may not work in Octeon-Discord
+        Disclaimer: this may not work in OctoBot-Discord
         """
         def decorator(func):
             self.inline_buttons.append({

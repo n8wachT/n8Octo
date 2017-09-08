@@ -1,4 +1,4 @@
-from octeon.core import OcteonCore
-from octeon.utils import message, Plugin
-from octeon import constants
-import octeon._localization as locale
+from core.core import OctoBotCore
+from core.utils import message, Plugin
+from core import constants
+import core._localization as locale
