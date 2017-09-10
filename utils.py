@@ -20,15 +20,15 @@ class message:
                  file=None,
                  inline_keyboard=None,
                  parse_mode=None,
-                 failed=False):
+                 failed=False,
+                 voice=None):
         self.text = text
         self.file = file
         self.failed = failed
         self.photo = photo
+        self.voice = voice
         self.inline_keyboard = inline_keyboard
         self.parse_mode = parse_mode
-        if photo and file:
-            raise TypeError("Send file and photo at same time?!")
 
     @classmethod
     def from_old_format(cls, reply):
