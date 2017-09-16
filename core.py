@@ -146,21 +146,21 @@ class OctoBotCore(DefaultPlugin):
 
     def handle_command(self, update):
         for plugin in self.plugins:
+            self.logger.debug(plugin)
             if update.message.chat.id in plugin["disabledin"]:
                 continue
             else:
                 for command_info in plugin["commands"]:
                     command = command_info["command"]
-                    if command.endswith("/"):
-                        function = command_info["function"]
-                        state_only_command = update.message.text == command or update.message.text.startswith(
-                            command + " ")
-                        state_word_swap = len(update.message.text.split(
-                            "/")) > 2 and update.message.text.startswith(command)
-                        state_mention_command = update.message.text.startswith(
-                            command + "@")
-                        if state_only_command or state_word_swap or state_mention_command:
-                            return function
+                    function = command_info["function"]
+                    state_only_command = update.message.text == command or update.message.text.startswith(
+                        command + " ")
+                    state_word_swap = len(update.message.text.split(
+                        "/")) > 2 and update.message.text.startswith(command)
+                    state_mention_command = update.message.text.startswith(
+                        command + "@")
+                    if state_only_command or state_word_swap or state_mention_command:
+                        return function
 
     def handle_inline(self, update):
         for plugin in self.plugins:
