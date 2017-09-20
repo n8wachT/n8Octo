@@ -65,6 +65,16 @@ class Plugin:
         self.commands = []
         self.handlers = []
         self.inline_buttons = []
+        self.ai_events = []
+
+    def ai(self,
+                action):
+        def decorator(func):
+            self.ai_events.append({
+                "action": action,
+                "function": func,
+            })
+        return decorator
 
     def command(self,
                 command,
@@ -82,6 +92,8 @@ class Plugin:
                 "required_args": required_args
             })
         return decorator
+
+
 
     def message(self, regex: str):
         """

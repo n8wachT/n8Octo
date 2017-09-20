@@ -137,6 +137,7 @@ class OctoBotCore(DefaultPlugin):
                 self.plugins.append({
                     "state": OK,
                     "name": plugname,
+                    "ai": plugin.plugin.ai_events,
                     "commands": plugin.plugin.commands,
                     "messagehandles": plugin.plugin.handlers,
                     "inline_buttons": plugin.plugin.inline_buttons,
@@ -146,7 +147,6 @@ class OctoBotCore(DefaultPlugin):
 
     def handle_command(self, update):
         for plugin in self.plugins:
-            self.logger.debug(plugin)
             if update.message.chat.id in plugin["disabledin"]:
                 continue
             else:
@@ -170,14 +170,17 @@ class OctoBotCore(DefaultPlugin):
                 if update.inline_query.query.startswith(command):
                     return function, command
 
-    def handle_inline_button(self, query):
+    def handle_ai(self, update, event):
         for plugin in self.plugins:
-            if "inline_buttons" in plugin:
-                for command_info in plugin["inline_buttons"]:
-                    command = command_info["callback"]
-                    function = command_info["function"]
-                    if query.data.startswith(command):
-                        return function
+            if update.message.chat.id in plugin["disabledin"]:
+                continue
+            else:
+                if "ai" in plugin:
+                    for ai_event in plugin["ai"]:
+                        event_ = ai_event["action"]
+                        function = ai_event["function"]
+                        if event == event_:
+                            return function
 
     def handle_message(self, update):
         handlers = []
