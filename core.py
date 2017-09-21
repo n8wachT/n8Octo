@@ -170,6 +170,15 @@ class OctoBotCore(DefaultPlugin):
                 if update.inline_query.query.startswith(command):
                     return function, command
 
+    def handle_inline_button(self, query):
+        for plugin in self.plugins:
+            if "inline_buttons" in plugin:
+                for command_info in plugin["inline_buttons"]:
+                    command = command_info["callback"]
+                    function = command_info["function"]
+                    if query.data.startswith(command):
+                        return function
+
     def handle_ai(self, update, event):
         for plugin in self.plugins:
             if update.message.chat.id in plugin["disabledin"]:
