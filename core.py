@@ -59,6 +59,7 @@ class OctoBotCore(DefaultPlugin):
 
     def __init__(self):
         self.logger = getLogger("OctoBot-Core")
+        self.myusername = "broken"
         self.plugins = []
         self.disabled = []
         self.platform = "N/A"
@@ -158,7 +159,7 @@ class OctoBotCore(DefaultPlugin):
                     state_word_swap = len(update.message.text.split(
                         "/")) > 2 and update.message.text.startswith(command)
                     state_mention_command = update.message.text.startswith(
-                        command + "@")
+                        command + "@" + self.myusername)
                     if state_only_command or state_word_swap or state_mention_command:
                         return function
 
