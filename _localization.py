@@ -16,9 +16,9 @@ def convert_loc(path):
         readed = {}
         for lstring in data:
             try:
-                readed[lstring.split("\n")[0].strip()] = "\n".join(lstring.split("\n")[1:])[:-1].replace('\\n','\n')
+                readed[lstring.split("\n")[0].strip()] = "\n".join(lstring.split("\n")[1:]).strip("\n").replace('\\n','\n')
             except RuntimeError:
-                readed[lstring.split("\n")[0].strip()] = "\n".join(lstring.split("\n")[1:])[:-1]
+                readed[lstring.split("\n")[0].strip()] = "\n".join(lstring.split("\n")[1:]).strip("\n")
         return readed
 
 def get_strings(box):
