@@ -9,9 +9,6 @@ NOTAPLUGIN = True
 class message:
     """
     Base message class
-
-    Raises:
-        TypeError on incompatible conditions, like photo and parse_mode
     """
 
     def __init__(self,
@@ -21,7 +18,8 @@ class message:
                  inline_keyboard=None,
                  parse_mode=None,
                  failed=False,
-                 voice=None):
+                 voice=None,
+                 reply_to_prev_message=True):
         self.text = text
         self.file = file
         self.failed = failed
@@ -29,6 +27,7 @@ class message:
         self.voice = voice
         self.inline_keyboard = inline_keyboard
         self.parse_mode = parse_mode
+        self.reply_to_prev_message = reply_to_prev_message
 
     @classmethod
     def from_old_format(cls, reply):
