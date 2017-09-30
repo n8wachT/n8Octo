@@ -65,6 +65,7 @@ class Plugin:
         self.handlers = []
         self.inline_buttons = []
         self.ai_events = []
+        self.update_hooks = []
 
     def ai(self,
                 action):
@@ -92,7 +93,13 @@ class Plugin:
             })
         return decorator
 
-
+    def update(self):
+        """
+        Plugin would catch EVERY update
+        """
+        def decorator(func):
+            self.update_hooks.append(func)
+        return decorator
 
     def message(self, regex: str):
         """

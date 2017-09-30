@@ -142,7 +142,8 @@ class OctoBotCore(DefaultPlugin):
                     "commands": plugin.plugin.commands,
                     "messagehandles": plugin.plugin.handlers,
                     "inline_buttons": plugin.plugin.inline_buttons,
-                    "disabledin": []
+                    "disabledin": [],
+                    "update_handlers":plugin.plugin.update_hooks
                 })
                 self.logger.info("Module %s loaded", plugname)
 
@@ -162,6 +163,15 @@ class OctoBotCore(DefaultPlugin):
                         command + "@" + self.myusername)
                     if state_only_command or state_word_swap or state_mention_command:
                         return function
+
+    def handle_update(self, update):
+        upd_handlers = []
+        for plugin in self.plugins:
+            if "update_handlers" in plugin:
+                for func in plugin["update_handlers"]:
+                    upd_handlers.append(func)
+        self.logger.debug(upd_handlers)
+        return upd_handlers
 
     def handle_inline(self, update):
         for plugin in self.plugins:
