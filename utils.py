@@ -85,7 +85,7 @@ class Plugin:
             self.commands.append({
                 "command": command,
                 "description": html.escape(description),
-                "function": func,
+                "function": lambda bot, update, user, args: func(bot, update, user, args) if len(args)>=required_args else message(text="Not enough arguments", failed=True),
                 "inline_support": inline_supported,
                 "hidden": hidden,
                 "required_args": required_args
