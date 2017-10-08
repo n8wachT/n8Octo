@@ -87,7 +87,7 @@ class OctoBotCore(DefaultPlugin):
             "messagehandles": [],
             "disabledin": []
         })
-        self.logger.info("Adding handlers")
+        self.logger.debug("Adding handlers")
         for plugin in self.plugins:
             for command in plugin["commands"]:
                 if "required_args" in command:
@@ -128,7 +128,7 @@ class OctoBotCore(DefaultPlugin):
                     "inline_buttons": [],
                     "disabledin": []
                 })
-                self.logger.info("Legacy module %s loaded", plugname)
+                self.logger.debug("Legacy module %s loaded", plugname)
             else:
                 # Working with new plugins
                 self.plugins.append({
@@ -141,7 +141,7 @@ class OctoBotCore(DefaultPlugin):
                     "disabledin": [],
                     "update_handlers":plugin.plugin.update_hooks
                 })
-                self.logger.info("Module %s loaded", plugname)
+                self.logger.debug("Module %s loaded", plugname)
 
     def handle_command(self, update):
         for plugin in self.plugins:
