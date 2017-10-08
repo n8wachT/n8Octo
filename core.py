@@ -70,14 +70,10 @@ class OctoBotCore(DefaultPlugin):
         raise RuntimeError
 
     def create_command_handler(self, command, function, minimal_args=0):
-        raise RuntimeError
+        return
 
     def load_all_plugins(self):
         self.plugins.clear()
-        if 0 in self.dispatcher.handlers:
-            for handle in self.dispatcher.handlers[0]:
-                if isinstance(handle, CommandHandler):
-                    self.dispatcher.remove_handler(handle)
         for filename in glob("plugins/*.py"):
             self.load_plugin(filename)
         self.plugins.append({
