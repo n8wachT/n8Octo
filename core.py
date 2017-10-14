@@ -7,7 +7,6 @@ from glob import glob
 from logging import getLogger
 import re
 
-from telegram.ext import CommandHandler
 import core
 from core.constants import ERROR, OK
 import settings
@@ -24,35 +23,6 @@ class DefaultPlugin:
         else:
             return core.message("Access Denied.")
 
-    def coreplug_start(*_, **__):
-        raise RuntimeError
-
-    def coreplug_help(*_, **__):
-        raise RuntimeError
-
-    def coreplug_list(self, *_):
-        message = []
-        for plugin in self.plugins:
-            txt = ''
-            if plugin["state"] == OK:
-                txt += "✅"
-            else:
-                txt += "⛔"
-            txt += plugin["name"]
-            message.append(txt)
-        message = sorted(message)
-        message.reverse()
-        return core.message("\n".join(message))
-
-    def coreplug_load(self, bot, update, user, args):
-        args = " ".join(args)
-        if user.id == settings.ADMIN:
-            self.logger.info("Reload requested.")
-            update.message.reply_text("Loading " + args)
-            self.load_plugin(args)
-            return self.coreplug_list()
-        else:
-            return core.message("Access Denied.")
 
 
 class OctoBotCore(DefaultPlugin):
@@ -66,9 +36,6 @@ class OctoBotCore(DefaultPlugin):
         self.logger.info("Starting OctoBot-Core. Loading plugins.")
         self.load_all_plugins()
 
-    def gen_help(self):
-        raise RuntimeError
-
     def create_command_handler(self, command, function, minimal_args=0):
         return
 
@@ -76,17 +43,17 @@ class OctoBotCore(DefaultPlugin):
         self.plugins.clear()
         for filename in glob("plugins/*.py"):
             self.load_plugin(filename)
-        self.plugins.append({
-            "state": OK,
-            "name": "OctoBot Core Plugin",
-            "commands": [{"command": "/start", "function": self.coreplug_start},
-                         {"command": "//plugins", "function": self.coreplug_list},
-                         {"command": "/help", "function": self.coreplug_help},
-                         {"command": "//reload", "function": self.coreplug_reload},
-                         {"command": "//pluginload", "function": self.coreplug_load}],
-            "messagehandles": [],
-            "disabledin": []
-        })
+        # self.plugins.append({
+        #     "state": OK,
+        #     "name": "OctoBot Core Plugin",
+        #     "commands": [{"command": "/start", "function": self.coreplug_start},
+        #                  {"command": "//plugins", "function": self.coreplug_list},
+        #                  {"command": "/help", "function": self.coreplug_help},
+        #                  {"command": "//reload", "function": self.coreplug_reload},
+        #                  {"command": "//pluginload", "function": self.coreplug_load}],
+        #     "messagehandles": [],
+        #     "disabledin": []
+        # })
         self.logger.debug("Adding handlers")
         for plugin in self.plugins:
             for command in plugin["commands"]:
