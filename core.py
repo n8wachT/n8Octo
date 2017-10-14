@@ -100,7 +100,7 @@ class OctoBotCore(DefaultPlugin):
                 # Working with new plugins
                 self.plugins.append({
                     "state": OK,
-                    "name": plugname,
+                    "name": plugin.plugin.name if plugin.plugin.name else plugname,
                     "ai": plugin.plugin.ai_events,
                     "commands": plugin.plugin.commands,
                     "messagehandles": plugin.plugin.handlers,

@@ -60,7 +60,8 @@ class message:
 class Plugin:
     """OctoBot plugin base"""
 
-    def __init__(self):
+    def __init__(self, name=None):
+        self.name = name
         self.commands = []
         self.handlers = []
         self.inline_buttons = []
