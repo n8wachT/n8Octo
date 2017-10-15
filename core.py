@@ -43,17 +43,6 @@ class OctoBotCore(DefaultPlugin):
         self.plugins.clear()
         for filename in glob("plugins/*.py"):
             self.load_plugin(filename)
-        # self.plugins.append({
-        #     "state": OK,
-        #     "name": "OctoBot Core Plugin",
-        #     "commands": [{"command": "/start", "function": self.coreplug_start},
-        #                  {"command": "//plugins", "function": self.coreplug_list},
-        #                  {"command": "/help", "function": self.coreplug_help},
-        #                  {"command": "//reload", "function": self.coreplug_reload},
-        #                  {"command": "//pluginload", "function": self.coreplug_load}],
-        #     "messagehandles": [],
-        #     "disabledin": []
-        # })
         self.logger.debug("Adding handlers")
         for plugin in self.plugins:
             for command in plugin["commands"]:
@@ -142,10 +131,13 @@ class OctoBotCore(DefaultPlugin):
     def handle_inline(self, update):
         for plugin in self.plugins:
             for command_info in plugin["commands"]:
-                command = command_info["command"]
+                aliases = command_info["command"]
                 function = command_info["function"]
-                if update.inline_query.query.startswith(command):
-                    return function, command
+                if isinstance(aliases, str):
+                    aliases = [aliases]
+                for alias in aliases:
+                    if update.inline_query.query.startswith(alias):
+                        return function, alias
 
     def handle_inline_button(self, query):
         for plugin in self.plugins:
