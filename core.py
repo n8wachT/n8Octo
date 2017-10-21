@@ -116,7 +116,8 @@ class OctoBotCore(DefaultPlugin):
                             "/")) > 2 and update.message.text.startswith(command)
                         state_mention_command = update.message.text.startswith(
                             command + "@" + self.myusername)
-                        if state_only_command or state_word_swap or state_mention_command:
+                        state_ends_with_command = update.message.text.endswith(command)
+                        if state_only_command or state_word_swap or state_mention_command or state_ends_with_command:
                             return function
 
     def handle_update(self, update):
