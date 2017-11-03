@@ -19,7 +19,8 @@ class message:
                  parse_mode=None,
                  failed=False,
                  voice=None,
-                 reply_to_prev_message=True):
+                 reply_to_prev_message=True,
+                 extra_args={}):
         self.text = text
         self.file = file
         self.failed = failed
@@ -28,6 +29,7 @@ class message:
         self.inline_keyboard = inline_keyboard
         self.parse_mode = parse_mode
         self.reply_to_prev_message = reply_to_prev_message
+        self.extra_args = extra_args
 
     @classmethod
     def from_old_format(cls, reply):
