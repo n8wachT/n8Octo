@@ -11,6 +11,10 @@ import core
 from core.constants import ERROR, OK
 import settings
 
+def create_void(reply):
+    def void(*_, **__):
+        return reply
+    return void
 
 class DefaultPlugin:
 
@@ -130,6 +134,7 @@ class OctoBotCore(DefaultPlugin):
         return upd_handlers
 
     def handle_inline(self, update):
+        acommands = []
         for plugin in self.plugins:
             for command_info in plugin["commands"]:
                 aliases = command_info["command"]
@@ -137,8 +142,13 @@ class OctoBotCore(DefaultPlugin):
                 if isinstance(aliases, str):
                     aliases = [aliases]
                 for alias in aliases:
-                    if update.inline_query.query.startswith(alias):
-                        return function, alias
+                    if update.inline_query.query == alias or update.inline_query.query.startswith(alias + " "):
+                        if command_info["inline_support"]:
+                            acommands.append([function, alias])
+                        else:
+                            acommands.append([create_void(core.message("%s command does not support inline mode" % alias)), alias])
+                        continue
+        return acommands
 
     def handle_inline_button(self, query):
         for plugin in self.plugins:
