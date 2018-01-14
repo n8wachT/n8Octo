@@ -9,7 +9,7 @@ class InvalidLocale(LocaleError):
     pass
 
 def convert_loc(path):
-    with open(os.path.normpath(path)) as f:
+    with open(os.path.normpath(path), encoding="utf-8") as f:
         data = f.read().split("---")[1:]
         if data == []:
             raise InvalidLocale("Invalid Locale file. Doesnt contain any strings")
