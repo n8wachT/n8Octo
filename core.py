@@ -108,20 +108,22 @@ class OctoBotCore(DefaultPlugin):
             if update.message.chat.id in plugin["disabledin"]:
                 continue
             else:
+                incmd = update.message.text.replace("!", "/")
+                incmd = incmd.replace("$", "/")
+                incmd = incmd.replace("#", "/")
                 for command_info in plugin["commands"]:
                     aliases = command_info["command"]
                     function = command_info["function"]
                     if isinstance(aliases, str):
                         aliases = [aliases]
                     for command in aliases:
-                        state_only_command = update.message.text == command or update.message.text.startswith(
+                        state_only_command = incmd == command or incmd.startswith(
                             command + " ")
-                        state_word_swap = len(update.message.text.split(
-                            "/")) > 2 and update.message.text.startswith(command)
-                        state_mention_command = update.message.text.startswith(
+                        state_word_swap = len(incmd.split(
+                            "/")) > 2 and incmd.startswith(command)
+                        state_mention_command = incmd.startswith(
                             command + "@" + self.myusername)
-                        state_ends_with_command = update.message.text.endswith(command)
-                        if state_only_command or state_word_swap or state_mention_command or state_ends_with_command:
+                        if state_only_command or state_word_swap or state_mention_command:
                             return function
 
     def handle_update(self, update):
