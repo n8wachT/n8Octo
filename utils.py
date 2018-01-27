@@ -31,6 +31,7 @@ class message:
         self.parse_mode = parse_mode
         self.reply_to_prev_message = reply_to_prev_message
         self.extra_args = extra_args
+        self.post_init()
 
     def post_init(self):
         if isinstance(self.photo, str): self.photo_as_preview()
