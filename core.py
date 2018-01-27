@@ -60,48 +60,51 @@ class OctoBotCore(DefaultPlugin):
     def load_plugin(self, plugpath):
         plugname = os.path.basename(plugpath).split(".py")[0]
         try:
-            spec = importlib.util.spec_from_file_location(
-                "core.plugin", plugpath)
-            plugin = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(plugin)
-        except Exception as f:
-            self.logger.warning(
-                "Plugin %s failed to init cause of %s", plugname, f)
-            self.plugins.append({
-                "state": ERROR,
-                "name": plugname,
-                "commands": [],
-                "messagehandles": [],
-                "inline_buttons": [],
-                "disabledin": []
-            })
-        else:
             try:
-                plugin.PLUGINVERSION
-            except AttributeError:
-                # Working with outdated plugins.
+                spec = importlib.util.spec_from_file_location(
+                    "core.plugin", plugpath)
+                plugin = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(plugin)
+            except Exception as f:
+                self.logger.warning(
+                    "Plugin %s failed to init cause of %s", plugname, f)
                 self.plugins.append({
-                    "state": OK,
+                    "state": ERROR,
                     "name": plugname,
-                    "commands": plugin.COMMANDS,
+                    "commands": [],
                     "messagehandles": [],
                     "inline_buttons": [],
                     "disabledin": []
                 })
-                self.logger.debug("Legacy module %s loaded", plugname)
             else:
-                # Working with new plugins
-                self.plugins.append({
-                    "state": OK,
-                    "name": plugin.plugin.name if plugin.plugin.name else plugname,
-                    "ai": plugin.plugin.ai_events,
-                    "commands": plugin.plugin.commands,
-                    "messagehandles": plugin.plugin.handlers,
-                    "inline_buttons": plugin.plugin.inline_buttons,
-                    "disabledin": [],
-                    "update_handlers":plugin.plugin.update_hooks
-                })
-                self.logger.debug("Module %s loaded", plugname)
+                try:
+                    plugin.PLUGINVERSION
+                except AttributeError:
+                    # Working with outdated plugins.
+                    self.plugins.append({
+                        "state": OK,
+                        "name": plugname,
+                        "commands": plugin.COMMANDS,
+                        "messagehandles": [],
+                        "inline_buttons": [],
+                        "disabledin": []
+                    })
+                    self.logger.debug("Legacy module %s loaded", plugname)
+                else:
+                    # Working with new plugins
+                    self.plugins.append({
+                        "state": OK,
+                        "name": plugin.plugin.name if plugin.plugin.name else plugname,
+                        "ai": plugin.plugin.ai_events,
+                        "commands": plugin.plugin.commands,
+                        "messagehandles": plugin.plugin.handlers,
+                        "inline_buttons": plugin.plugin.inline_buttons,
+                        "disabledin": [],
+                        "update_handlers":plugin.plugin.update_hooks
+                    })
+                    self.logger.debug("Module %s loaded", plugname)
+        except Exception:
+            self.logger.critical("An unknown core error got raised while loading %s", plugname)
 
     def handle_command(self, update):
         for plugin in self.plugins:
