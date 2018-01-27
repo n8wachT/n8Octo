@@ -2,7 +2,8 @@
 OctoBot stuff
 """
 from core import constants
-import html
+import html, logging
+LOGGER = logging.getLogger("Utils")
 NOTAPLUGIN = True
 
 
@@ -31,6 +32,25 @@ class message:
         self.reply_to_prev_message = reply_to_prev_message
         self.extra_args = extra_args
 
+    def post_init(self):
+        if isinstance(self.photo, str): self.photo_as_preview()
+        if self.parse_mode == "MARKDOWN": LOGGER.warning("Please do NOT use markdown! It breaks too easily!")
+
+    def enable_web_page_preview(self):
+        self.extra_args["disable_web_page_preview"] = False
+
+    def photo_as_preview(self):
+        if not self.text == "":
+            if self.parse_mode is None:
+                self.parse_mode = "HTML"
+                self.text = f'<a href="{self.photo}">\u00a0</a>{html.escape(self.text)}'
+                self.photo = None
+                self.enable_web_page_preview()
+            elif self.parse_mode == "HTML":
+                self.text = f'<a href="{self.photo}">\u00a0</a>{self.text}'
+                self.photo = None
+                self.enable_web_page_preview()
+
     @classmethod
     def from_old_format(cls, reply):
         message = cls()
@@ -56,6 +76,7 @@ class message:
             message.inline_keyboard = reply[0][2]
         if "failed" in reply:
             message.failed = True
+        message.post_init()
         return message
 
 
