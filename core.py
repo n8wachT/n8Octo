@@ -6,7 +6,7 @@ import os.path
 from glob import glob
 from logging import getLogger
 import re
-
+import sys
 import core
 from core.constants import ERROR, OK
 import settings
@@ -37,8 +37,12 @@ class OctoBotCore(DefaultPlugin):
         self.plugins = []
         self.disabled = []
         self.platform = "N/A"
-        self.logger.info("Starting OctoBot-Core. Loading plugins.")
-        self.load_all_plugins()
+        if len(sys.argv) > 1:
+            self.logger.info("Loading only %s", sys.argv[-1])
+            self.load_plugin(sys.argv[-1])
+        else:
+            self.logger.info("Loading all plugins")
+            self.load_all_plugins()
 
     def create_command_handler(self, command, function, minimal_args=0):
         return
