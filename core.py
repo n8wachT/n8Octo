@@ -62,7 +62,7 @@ class OctoBotCore(DefaultPlugin):
         try:
             try:
                 spec = importlib.util.spec_from_file_location(
-                    "core.plugin", plugpath)
+                    plugpath.replace("/", ".").replace("\\", "."), plugpath)
                 plugin = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(plugin)
             except Exception as f:
