@@ -103,6 +103,7 @@ class OctoBotCore(DefaultPlugin):
                         "commands": plugin.plugin.commands,
                         "messagehandles": plugin.plugin.handlers,
                         "inline_buttons": plugin.plugin.inline_buttons,
+                        "inline_commands": plugin.plugin.inline_commands,
                         "disabledin": [],
                         "update_handlers":plugin.plugin.update_hooks
                     })
@@ -153,13 +154,25 @@ class OctoBotCore(DefaultPlugin):
                 for alias in aliases:
                     if update.inline_query.query == alias or update.inline_query.query.startswith(alias + " "):
                         if command_info["inline_hidden"]:
-                            return
+                            continue
                         elif command_info["inline_support"]:
                             acommands.append([function, alias])
                         else:
                             acommands.append([create_void(core.message("%s command does not support inline mode" % alias)), alias])
                         continue
         return acommands
+
+    def handle_inline_custom(self, update):
+        inline_cmds = []
+        for plugin in self.plugins:
+            if "inline_commands" in plugin:
+                for command in plugin["inline_commands"]:
+                    if isinstance(command["command"], str):
+                        command["command"] = [command["command"]]
+                    for alias in command["command"]:
+                        if update.inline_query.query.startswith(alias):
+                            inline_cmds.append(command["function"])
+        return inline_cmds
 
     def handle_inline_button(self, query):
         for plugin in self.plugins:

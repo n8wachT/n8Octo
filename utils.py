@@ -91,6 +91,7 @@ class Plugin:
         self.inline_buttons = []
         self.ai_events = []
         self.update_hooks = []
+        self.inline_commands = []
 
     def ai(self,
                 action):
@@ -114,6 +115,7 @@ class Plugin:
                 "description": html.escape(description),
                 "function": lambda bot, update, user, args: func(bot, update, user, args) if len(args)>=required_args else message(text="Not enough arguments", failed=True),
                 "inline_support": inline_supported,
+                "inline_hidden": inline_hidden,
                 "hidden": hidden,
                 "required_args": required_args
             })
@@ -148,4 +150,12 @@ class Plugin:
                 "callback": callback_name,
                 "function": func,
             })
+        return decorator
+
+    def inline_command(self, command:str):
+        def decorator(func):
+            self.inline_commands.append({
+                "command":command,
+                "function": func
+                })
         return decorator
