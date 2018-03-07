@@ -16,6 +16,7 @@ def create_void(reply):
         return reply
     return void
 
+
 class DefaultPlugin:
 
     def coreplug_reload(self, bot, update, user, *__):
@@ -26,7 +27,6 @@ class DefaultPlugin:
             return self.coreplug_list()
         else:
             return core.message("Access Denied.")
-
 
 
 class OctoBotCore(DefaultPlugin):
@@ -152,7 +152,9 @@ class OctoBotCore(DefaultPlugin):
                     aliases = [aliases]
                 for alias in aliases:
                     if update.inline_query.query == alias or update.inline_query.query.startswith(alias + " "):
-                        if command_info["inline_support"]:
+                        if command_info["inline_hidden"]:
+                            return
+                        elif command_info["inline_support"]:
                             acommands.append([function, alias])
                         else:
                             acommands.append([create_void(core.message("%s command does not support inline mode" % alias)), alias])

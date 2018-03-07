@@ -106,7 +106,8 @@ class Plugin:
                 description="Not available",
                 inline_supported=True,
                 hidden=False,
-                required_args=0):
+                required_args=0,
+                inline_hidden=False):
         def decorator(func):
             self.commands.append({
                 "command": command,
