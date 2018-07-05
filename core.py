@@ -76,6 +76,8 @@ class OctoBotCore(DefaultPlugin):
                 self.plugins.append(utils.BrokenPlugin(name=plugpath))
                 return False
             else:
+                if plugin.plugin.name == None:
+                    plugin.plugin.name = plugname
                 self.plugins.append(plugin.plugin)
                 self.logger.debug("Module %s loaded", plugname)
                 return True
