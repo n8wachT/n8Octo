@@ -2,6 +2,7 @@
 OctoBot Core
 """
 import importlib.util
+import traceback
 import os.path
 from glob import glob
 from logging import getLogger
@@ -9,6 +10,7 @@ import re
 import sys
 import core
 from core.constants import ERROR, OK
+import core.utils as utils
 import settings
 
 def create_void(reply):
@@ -31,18 +33,19 @@ class DefaultPlugin:
 
 class OctoBotCore(DefaultPlugin):
 
-    def __init__(self):
+    def __init__(self, load_all=True):
         self.logger = getLogger("OctoBot-Core")
         self.myusername = "broken"
         self.plugins = []
         self.disabled = []
         self.platform = "N/A"
-        if len(sys.argv) > 1:
-            self.logger.info("Loading only %s", sys.argv[-1])
-            self.load_plugin(sys.argv[-1])
-        else:
-            self.logger.info("Loading all plugins")
-            self.load_all_plugins()
+        if load_all:
+            if len(sys.argv) > 1:
+                self.logger.info("Loading only %s", sys.argv[-1])
+                self.load_plugin(sys.argv[-1])
+            else:
+                self.logger.info("Loading all plugins")
+                self.load_all_plugins()
 
     def create_command_handler(self, command, function, minimal_args=0):
         return
@@ -53,13 +56,10 @@ class OctoBotCore(DefaultPlugin):
             self.load_plugin(filename)
         self.logger.debug("Adding handlers")
         for plugin in self.plugins:
-            for command in plugin["commands"]:
-                if "required_args" in command:
-                    rargs = command["required_args"]
-                else:
-                    rargs = 0
+            for command in plugin.commands:
+                rargs = command.required_args
                 self.create_command_handler(
-                    command["command"], command["function"], rargs)
+                    command.command, command.execute, rargs)
 
     def load_plugin(self, plugpath):
         plugname = os.path.basename(plugpath).split(".py")[0]
@@ -71,91 +71,60 @@ class OctoBotCore(DefaultPlugin):
                 spec.loader.exec_module(plugin)
             except Exception as f:
                 self.logger.warning(
-                    "Plugin %s failed to init cause of %s", plugname, f)
-                self.plugins.append({
-                    "state": ERROR,
-                    "name": plugname,
-                    "commands": [],
-                    "messagehandles": [],
-                    "inline_buttons": [],
-                    "disabledin": []
-                })
+                    "Plugin %s failed to init. Traceback:", plugname)
+                traceback.print_exc()
+                self.plugins.append(utils.BrokenPlugin(name=plugpath))
+                return False
             else:
-                try:
-                    plugin.PLUGINVERSION
-                except AttributeError:
-                    # Working with outdated plugins.
-                    self.plugins.append({
-                        "state": OK,
-                        "name": plugname,
-                        "commands": plugin.COMMANDS,
-                        "messagehandles": [],
-                        "inline_buttons": [],
-                        "disabledin": []
-                    })
-                    self.logger.debug("Legacy module %s loaded", plugname)
-                else:
-                    # Working with new plugins
-                    self.plugins.append({
-                        "state": OK,
-                        "name": plugin.plugin.name if plugin.plugin.name else plugname,
-                        "ai": plugin.plugin.ai_events,
-                        "commands": plugin.plugin.commands,
-                        "messagehandles": plugin.plugin.handlers,
-                        "inline_buttons": plugin.plugin.inline_buttons,
-                        "inline_commands": plugin.plugin.inline_commands,
-                        "disabledin": [],
-                        "update_handlers":plugin.plugin.update_hooks
-                    })
-                    self.logger.debug("Module %s loaded", plugname)
+                self.plugins.append(plugin.plugin)
+                self.logger.debug("Module %s loaded", plugname)
+                return True
         except Exception:
-            self.logger.critical("An unknown core error got raised while loading %s", plugname)
+            self.logger.critical("An unknown core error got raised while loading %s. Traceback:", plugname)
+            traceback.print_exc()
+            return False
 
     def handle_command(self, update):
         for plugin in self.plugins:
-            if update.message.chat.id in plugin["disabledin"]:
-                continue
-            else:
-                incmd = update.message.text.replace("!", "/")
-                incmd = incmd.replace("$", "/")
-                incmd = incmd.replace("#", "/")
-                for command_info in plugin["commands"]:
-                    aliases = command_info["command"]
-                    function = command_info["function"]
-                    if isinstance(aliases, str):
-                        aliases = [aliases]
-                    for command in aliases:
-                        state_only_command = incmd == command or incmd.startswith(
-                            command + " ")
-                        state_word_swap = len(incmd.split(
-                            "/")) > 2 and incmd.startswith(command)
-                        state_mention_command = incmd.startswith(
-                            command + "@" + self.myusername)
-                        if state_only_command or state_word_swap or state_mention_command:
-                            return function
+            incmd = update.message.text.replace("!", "/")
+            incmd = incmd.replace("$", "/")
+            incmd = incmd.replace("#", "/")
+            for command_info in plugin.commands:
+                aliases = command_info.command
+                function = command_info.execute
+                if isinstance(aliases, str):
+                    aliases = [aliases]
+                for command in aliases:
+                    state_only_command = incmd == command or incmd.startswith(
+                        command + " ")
+                    state_word_swap = len(incmd.split(
+                        "/")) > 2 and incmd.startswith(command)
+                    state_mention_command = incmd.startswith(
+                        command + "@" + self.myusername)
+                    if state_only_command or state_word_swap or state_mention_command:
+                        return function
 
     def handle_update(self, update):
         upd_handlers = []
         for plugin in self.plugins:
-            if "update_handlers" in plugin:
-                for func in plugin["update_handlers"]:
-                    upd_handlers.append(func)
+            for func in plugin.update_hooks:
+                upd_handlers.append(func)
         self.logger.debug(upd_handlers)
         return upd_handlers
 
     def handle_inline(self, update):
         acommands = []
         for plugin in self.plugins:
-            for command_info in plugin["commands"]:
-                aliases = command_info["command"]
-                function = command_info["function"]
+            for command_info in plugin.commands:
+                aliases = command_info.command
+                function = command_info.execute
                 if isinstance(aliases, str):
                     aliases = [aliases]
                 for alias in aliases:
                     if update.inline_query.query == alias or update.inline_query.query.startswith(alias + " "):
-                        if command_info["inline_hidden"]:
+                        if command_info.inline_hidden:
                             continue
-                        elif command_info["inline_support"]:
+                        elif command_info.inline_support:
                             acommands.append([function, alias])
                         else:
                             acommands.append([create_void(core.message("%s command does not support inline mode" % alias)), alias])
@@ -165,44 +134,27 @@ class OctoBotCore(DefaultPlugin):
     def handle_inline_custom(self, update):
         inline_cmds = []
         for plugin in self.plugins:
-            if "inline_commands" in plugin:
-                for command in plugin["inline_commands"]:
-                    if isinstance(command["command"], str):
-                        command["command"] = [command["command"]]
-                    for alias in command["command"]:
-                        if update.inline_query.query.startswith(alias):
-                            inline_cmds.append(command["function"])
+            for command, func in plugin.inline_commands.items():
+                if isinstance(command, str):
+                    command = [command]
+                for alias in command:
+                    if update.inline_query.query.startswith(alias):
+                        inline_cmds.append(func)
         return inline_cmds
 
     def handle_inline_button(self, query):
         for plugin in self.plugins:
-            if "inline_buttons" in plugin:
-                for command_info in plugin["inline_buttons"]:
-                    command = command_info["callback"]
-                    function = command_info["function"]
-                    if query.data.startswith(command):
-                        return function
-
-    def handle_ai(self, update, event):
-        for plugin in self.plugins:
-            if update.message.chat.id in plugin["disabledin"]:
-                continue
-            else:
-                if "ai" in plugin:
-                    for ai_event in plugin["ai"]:
-                        event_ = ai_event["action"]
-                        function = ai_event["function"]
-                        if event == event_:
-                            return function
+            for callback, func in plugin.inline_buttons.items():
+                if query.data.startswith(callback):
+                    return func
 
     def handle_message(self, update):
         handlers = []
         for plugin in self.plugins:
             try:
-                if "messagehandles" in plugin:
-                    for message_info in plugin["messagehandles"]:
-                        if re.match(message_info["regex"], update.message.text):
-                            handlers.append(message_info["function"])
+                for regex, func in plugin.message_handlers.items():
+                    if re.match(regex, update.message.text):
+                        handlers.append(func)
             except TypeError:
                 pass
         return handlers

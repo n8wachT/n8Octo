@@ -80,6 +80,16 @@ class message:
         message.post_init()
         return message
 
+class Command:
+    def __init__(self, func, command, description, inline_support, inline_hidden, hidden, required_args):
+        self.command = command
+        self.description = description
+        self.inline_support = inline_support
+        self.inline_hidden = inline_hidden
+        self.hidden = hidden
+        self.required_args = required_args
+        self.execute = func
+
 
 class Plugin:
     """OctoBot plugin base"""
@@ -87,20 +97,11 @@ class Plugin:
     def __init__(self, name=None):
         self.name = name
         self.commands = []
-        self.handlers = []
-        self.inline_buttons = []
-        self.ai_events = []
+        self.message_handlers = {}
+        self.inline_buttons = {}
         self.update_hooks = []
-        self.inline_commands = []
-
-    def ai(self,
-                action):
-        def decorator(func):
-            self.ai_events.append({
-                "action": action,
-                "function": func,
-            })
-        return decorator
+        self.inline_commands = {}
+        self.state = constants.OK
 
     def command(self,
                 command,
@@ -110,15 +111,13 @@ class Plugin:
                 required_args=0,
                 inline_hidden=False):
         def decorator(func):
-            self.commands.append({
-                "command": command,
-                "description": html.escape(description),
-                "function": lambda bot, update, user, args: func(bot, update, user, args) if len(args)>=required_args else message(text="Not enough arguments", failed=True),
-                "inline_support": inline_supported,
-                "inline_hidden": inline_hidden,
-                "hidden": hidden,
-                "required_args": required_args
-            })
+            def wrapper(bot, update, user, args):
+                if len(args) >= required_args:
+                    func(bot, update, user, args)
+                else:
+                    return message(text="Not enough arguments!", failed=True)
+            self.commands.append(Command(func, command, html.escape(description), inline_supported, hidden, inline_hidden, required_args))
+        LOGGER.debug("Added command \"%s\" to plugin %s", command, self.name)
         return decorator
 
     def update(self):
@@ -127,6 +126,7 @@ class Plugin:
         """
         def decorator(func):
             self.update_hooks.append(func)
+        LOGGER.debug("Added update handler to plugin %s", self.name)
         return decorator
 
     def message(self, regex: str):
@@ -134,28 +134,34 @@ class Plugin:
         Pass regex pattern for your function
         """
         def decorator(func):
-            self.handlers.append({
-                "regex": regex,
-                "function": func,
-            })
+            self.message_handlers[regex] = func
+        LOGGER.debug("Added regex handler \"%s\" to plugin %s", regex, self.name)
         return decorator
 
     def inline_button(self, callback_name: str):
         """
         Pass the text your callback name starts with
-        Disclaimer: this may not work in OctoBot-Discord
         """
         def decorator(func):
-            self.inline_buttons.append({
-                "callback": callback_name,
-                "function": func,
-            })
+            self.inline_buttons[callback_name] = func
+        LOGGER.debug("Added inline button \"%s\" to plugin %s", callback_name, self.name)
         return decorator
 
-    def inline_command(self, command:str):
+    def inline_command(self, inline_command:str):
         def decorator(func):
-            self.inline_commands.append({
-                "command":command,
-                "function": func
-                })
+            if isinstance(inline_command, str):
+                command = (inline_command)
+            else:
+                command = tuple(inline_command)
+            self.inline_commands[command] = func
+        LOGGER.debug("Added inline command \"%s\" to plugin %s", inline_command, self.name)
         return decorator
+
+
+class BrokenPlugin(Plugin):
+    """
+    Plugin which didnt load successfully
+    """
+    def __init__(self, *args, **kwargs):
+        Plugin.__init__(self, *args, **kwargs)
+        self.state = constants.ERROR
