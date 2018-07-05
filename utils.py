@@ -116,7 +116,7 @@ class Plugin:
                     func(bot, update, user, args)
                 else:
                     return message(text="Not enough arguments!", failed=True)
-            self.commands.append(Command(func, command, html.escape(description), inline_supported, hidden, inline_hidden, required_args))
+            self.commands.append(Command(func, command, html.escape(description), inline_supported, inline_hidden, hidden, required_args))
         LOGGER.debug("Added command \"%s\" to plugin %s", command, self.name)
         return decorator
 
