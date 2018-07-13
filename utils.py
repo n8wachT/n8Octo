@@ -117,7 +117,7 @@ class Plugin:
         def decorator(func):
             def wrapper(bot, update, user, args):
                 if len(args) >= required_args:
-                    func(bot, update, user, args)
+                    return func(bot, update, user, args)
                 else:
                     return message(text="Not enough arguments!", failed=True)
             self.commands.append(Command(wrapper, command, html.escape(
