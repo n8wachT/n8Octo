@@ -2,7 +2,8 @@
 OctoBot stuff
 """
 from core import constants
-import html, logging
+import html
+import logging
 LOGGER = logging.getLogger("Utils")
 NOTAPLUGIN = True
 
@@ -34,8 +35,10 @@ class message:
         self.post_init()
 
     def post_init(self):
-        if isinstance(self.photo, str): self.photo_as_preview()
-        if self.parse_mode == "MARKDOWN": LOGGER.warning("Please do NOT use markdown! It breaks too easily!")
+        if isinstance(self.photo, str):
+            self.photo_as_preview()
+        if self.parse_mode == "MARKDOWN":
+            LOGGER.warning("Please do NOT use markdown! It breaks too easily!")
 
     def enable_web_page_preview(self):
         self.extra_args["disable_web_page_preview"] = False
@@ -80,6 +83,7 @@ class message:
         message.post_init()
         return message
 
+
 class Command:
     def __init__(self, func, command, description, inline_support, inline_hidden, hidden, required_args):
         self.command = command
@@ -116,7 +120,8 @@ class Plugin:
                     func(bot, update, user, args)
                 else:
                     return message(text="Not enough arguments!", failed=True)
-            self.commands.append(Command(func, command, html.escape(description), inline_supported, inline_hidden, hidden, required_args))
+            self.commands.append(Command(wrapper, command, html.escape(
+                description), inline_supported, inline_hidden, hidden, required_args))
         LOGGER.debug("Added command \"%s\" to plugin %s", command, self.name)
         return decorator
 
@@ -135,7 +140,8 @@ class Plugin:
         """
         def decorator(func):
             self.message_handlers[regex] = func
-        LOGGER.debug("Added regex handler \"%s\" to plugin %s", regex, self.name)
+        LOGGER.debug("Added regex handler \"%s\" to plugin %s",
+                     regex, self.name)
         return decorator
 
     def inline_button(self, callback_name: str):
@@ -144,17 +150,19 @@ class Plugin:
         """
         def decorator(func):
             self.inline_buttons[callback_name] = func
-        LOGGER.debug("Added inline button \"%s\" to plugin %s", callback_name, self.name)
+        LOGGER.debug("Added inline button \"%s\" to plugin %s",
+                     callback_name, self.name)
         return decorator
 
-    def inline_command(self, inline_command:str):
+    def inline_command(self, inline_command: str):
         def decorator(func):
             if isinstance(inline_command, str):
                 command = (inline_command)
             else:
                 command = tuple(inline_command)
             self.inline_commands[command] = func
-        LOGGER.debug("Added inline command \"%s\" to plugin %s", inline_command, self.name)
+        LOGGER.debug("Added inline command \"%s\" to plugin %s",
+                     inline_command, self.name)
         return decorator
 
 
@@ -162,6 +170,7 @@ class BrokenPlugin(Plugin):
     """
     Plugin which didnt load successfully
     """
+
     def __init__(self, *args, **kwargs):
         Plugin.__init__(self, *args, **kwargs)
         self.state = constants.ERROR
