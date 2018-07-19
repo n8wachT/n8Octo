@@ -2,6 +2,7 @@
 OctoBot stuff
 """
 from core import constants
+from os import getenv
 import html
 import logging
 LOGGER = logging.getLogger("Utils")
@@ -44,7 +45,9 @@ class message:
         self.extra_args["disable_web_page_preview"] = False
 
     def photo_as_preview(self):
-        if not self.text == "":
+        LOGGER.debug(getenv("platform", "telegram"))
+        if (not self.text == "") and getenv("platform", "telegram") == "telegram":
+            LOGGER.debug("Creating image as preview")
             if self.parse_mode is None:
                 self.parse_mode = "HTML"
                 self.text = f'<a href="{self.photo}">\u00a0</a>{html.escape(self.text)}'
