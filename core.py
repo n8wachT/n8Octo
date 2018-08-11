@@ -39,11 +39,11 @@ class OctoBotCore(DefaultPlugin):
         self.plugins = []
         self.disabled = []
         self.platform = "N/A"
-        if load_all:
-            if len(sys.argv) > 1:
-                self.logger.info("Loading only %s", sys.argv[-1])
-                self.load_plugin(sys.argv[-1])
-            else:
+        if len(sys.argv) > 1:
+            self.logger.info("Loading only %s", sys.argv[-1])
+            self.load_plugin(sys.argv[-1])
+        else:
+            if load_all:
                 self.logger.info("Loading all plugins")
                 self.load_all_plugins()
 
