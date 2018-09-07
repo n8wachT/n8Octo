@@ -13,6 +13,7 @@ from core.constants import ERROR, OK
 import core.utils as utils
 import settings
 
+
 def create_void(reply):
     def void(*_, **__):
         return reply
@@ -82,11 +83,12 @@ class OctoBotCore(DefaultPlugin):
                 self.logger.debug("Module %s loaded", plugname)
                 return True
         except Exception:
-            self.logger.critical("An unknown core error got raised while loading %s. Traceback:", plugname)
+            self.logger.critical(
+                "An unknown core error got raised while loading %s. Traceback:", plugname)
             traceback.print_exc()
             return False
 
-    def handle_command(self, update):
+    def handle_command(self, update, nsfw_ok=True):
         for plugin in self.plugins:
             incmd = update.message.text.replace("!", "/")
             incmd = incmd.replace("$", "/")
@@ -104,6 +106,8 @@ class OctoBotCore(DefaultPlugin):
                     state_mention_command = incmd.startswith(
                         command + "@" + self.myusername)
                     if state_only_command or state_word_swap or state_mention_command:
+                        if command_info.nsfw and not nsfw_ok:
+                            return create_void(core.message(text="This command is only for NSFW channels.", failed=True))
                         return function
 
     def handle_update(self, update):
@@ -129,7 +133,8 @@ class OctoBotCore(DefaultPlugin):
                         elif command_info.inline_support:
                             acommands.append([function, alias])
                         else:
-                            acommands.append([create_void(core.message("%s command does not support inline mode" % alias)), alias])
+                            acommands.append([create_void(core.message(
+                                "%s command does not support inline mode" % alias)), alias])
                         continue
         return acommands
 

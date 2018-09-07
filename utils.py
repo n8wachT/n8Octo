@@ -88,7 +88,7 @@ class message:
 
 
 class Command:
-    def __init__(self, func, command, description, inline_support, inline_hidden, hidden, required_args):
+    def __init__(self, func, command, description, inline_support, inline_hidden, hidden, required_args, nsfw):
         self.command = command
         self.description = description
         self.inline_support = inline_support
@@ -96,6 +96,7 @@ class Command:
         self.hidden = hidden
         self.required_args = required_args
         self.execute = func
+        self.nsfw = nsfw
 
 
 class Plugin:
@@ -116,7 +117,8 @@ class Plugin:
                 inline_supported=True,
                 hidden=False,
                 required_args=0,
-                inline_hidden=False):
+                inline_hidden=False,
+                nsfw=False):
         def decorator(func):
             def wrapper(bot, update, user, args):
                 if len(args) >= required_args:
@@ -124,7 +126,7 @@ class Plugin:
                 else:
                     return message(text="Not enough arguments!", failed=True)
             self.commands.append(Command(wrapper, command, html.escape(
-                description), inline_supported, inline_hidden, hidden, required_args))
+                description), inline_supported, inline_hidden, hidden, required_args, nsfw))
         LOGGER.debug("Added command \"%s\" to plugin %s", command, self.name)
         return decorator
 
